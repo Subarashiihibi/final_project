@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+     <!-- Geocoder plugin -->
+     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
+     <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css' type='text/css' />
+
+      <!-- Turf.js plugin -->
+     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+    
+    <meta charset="utf-8" />
+    <title>Firestation Locator</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700"
+      rel="stylesheet"
+    />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        color: #404040;
+        font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .sidebar {
+        position: absolute;
+        width: 20%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        border-right: 1px solid rgba(0, 0, 0, 0.25);
+      }
+      .pad2 {
+        padding: 20px;
+      }
+
+      .map {
+        position: absolute;
+        left: 20%;
+        width: 80%;
+        top: 0;
+        bottom: 0;
+      }
+
+      h1 {
+        font-size: 22px;
+        margin: 0;
+        font-weight: 400;
+        line-height: 20px;
+        padding: 20px 2px;
+      }
+
+      a {
+        color: #404040;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #101010;
+      }
+
+      .heading {
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        min-height: 60px;
+        line-height: 60px;
+        padding: 0 10px;
+        background-color: #a01c05;
+        color: #fff;
+      }
+
+      .listings {
+        height: 100%;
+        overflow: auto;
+        padding-bottom: 60px;
+      }
+
+      .listings .item {
+        border-bottom: 1px solid #eee;
+        padding: 10px;
+        text-decoration: none;
+      }
+
+      .listings .item:last-child {
+        border-bottom: none;
+      }
+      .listings .item .title {
+        display: block;
+        color: #a01c05;
+        font-weight: 700;
+      }
+
+      .listings .item .title small {
+        font-weight: 400;
+      }
+      .listings .item.active .title,
+      .listings .item .title:hover {
+        color: #fa5b3f;
+      }
+      .listings .item.active {
+        background-color: #ee7373;
+      }
+      ::-webkit-scrollbar {
+        width: 3px;
+        height: 3px;
+        border-left: 0;
+        background: rgba(0, 0, 0, 0.1);
+      }
+      ::-webkit-scrollbar-track {
+        background: none;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #a9abac;
+        border-radius: 0;
+      }
+
+      .marker {
+        border: none;
+        cursor: pointer;
+        height: 20px;
+        width: 20px;
+        background-image: url('./img/fire-station.svg');
+      }
+
+      /* Marker tweaks */
+      .mapboxgl-popup {
+        padding-bottom: 40px;
+      }
+
+      .mapboxgl-popup-close-button {
+        display: internal;
+      }
+      .mapboxgl-popup-content {
+        font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+        padding: 0;
+        width: 180px;
+      }
+
+      .mapboxgl-popup-content h3 {
+        background: #a01c05;
+        color: #fff;
+        margin: -15px 0 0;
+        padding: 10px;
+        border-radius: 3px 3px 0 0;
+        font-weight: 700;
+      }
+
+      .mapboxgl-popup-content h4 {
+        margin: 0;
+        padding: 10px;
+        font-weight: 400;
+      }
+
+      .mapboxgl-popup-content div {
+        padding: 10px;
+      }
+
+      .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+        margin-top: 15px;
+      }
+
+      .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+        border-bottom-color: #a01c05;
+      }
+
+
+      .mapboxgl-ctrl-geocoder {
+      border: 0;
+      border-radius: 0;
+      position: relative;
+      top: 0;
+      width: 800px;
+     margin-top: 0;
+     }
+
+     .mapboxgl-ctrl-geocoder > div {
+      min-width: 100%;
+      margin-left: 0;
+}
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="heading">
+        <h1>Firestation Location</h1>
+      </div>
+      <div id="listings" class="listings"></div>
+    </div>
+    <div id="map" class="map"></div>
+    <script>
+      mapboxgl.accessToken = 'pk.eyJ1Ijoic3RldmVuY2hlbjIwNzciLCJhIjoiY2t2Ym1oeDAyMGZmajJvcWlycnZrNnJsMCJ9.W-Uc6UehvPm0_Xw6lit0Pw';
+
+      /**
+       * Add the map to the page
+       */
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/stevenchen2077/ckwvsco1k1eti15oevwf6qji4',
+        center: [-122.30984860942972, 47.65657449421067,],
+        zoom: 10,
+        scrollZoom: true
+      });
+
+
+      const stations = {
+        'type': 'FeatureCollection',
+        'features': [
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.31698234594238, 47.668479819509805]
+            },
+            'properties': {
+              'stationNum': '17',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '1050 NE 50th St',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98105',
+              'state': 'WA.'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [ -122.32492617993286, 47.68053941678664]
+            },
+            'properties': {
+              'stationNum': '16',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '6846 Oswego Pl NE',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98115',
+              'state': ', WA.'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.26989450575692, 47.67238320057348]
+            },
+            'properties': {
+              'stationNum': '38',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '4004 NE 55th Street',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98105',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.3223310774194, 47.65221614534447]
+            },
+            'properties': {
+              'stationNum': '22',
+              'phoneFormatted': '(202) 337-9338',
+              'phone': '2023379338',
+              'address': '901 E Roanoke St #3917',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98102',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.34890007814639, 47.65376162601811]
+            },
+            'properties': {
+              'stationNum': '9',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '3829 Linden Ave N',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98103',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.29154139310566, 47.63679313958275]
+            },
+            'properties': {
+              'stationNum': '34',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '633 32nd Ave E',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98112',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [ -122.34487456282154, 47.62527356624467]
+            },
+            'properties': {
+              'stationNum': '2',
+              'address': '2320 4th Ave',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98121',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [ -122.35722270516746, 47.639257497496]
+            },
+            'properties': {
+              'stationNum': '8',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '4831 Bethesda Ave',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98109',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [ -122.37069839270998, 47.65134968210105]
+            },
+            'properties': {
+              'stationNum': '20',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '2800 15th Ave W',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98119',
+              'state': 'Washington'
+            }
+          },
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [-122.37970662307687, 47.6785641700079]
+            },
+            'properties': {
+              'stationNum': '18',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '1521 NW Market St #5212',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98107',
+              'state': 'Washington'
+              }
+            },
+            {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [ -122.35278815039494,47.69064128049579]
+            },
+            'properties': {
+              'stationNum': '21',
+              'phoneFormatted': '(206) 386-1400',
+              'phone': '2063861400',
+              'address': '7304 Greenwood Ave N',
+              'city': 'Seattle',
+              'country': 'United States',
+              'postalCode': '98103',
+              'state': 'Washington'
+            }
+          }
+        ]
+      };
+      /**
+       * Wait until the map loads to make changes to the map.
+       */
+        map.on('load', () => {
+        /**
+         * This is where your '.addLayer()' used to be, instead
+         * add only the source without styling a layer
+         */
+        map.addSource('places', {
+          'type': 'geojson',
+          'data': stations
+        });
+
+
+
+        const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken, // Set the access token
+        mapboxgl: mapboxgl, // Set the mapbox-gl instance
+        marker: true, // Use the geocoder's default marker style
+        bbox: [-122.43389004908049, 47.61034743958178, , -122.23505950457803, 47.70327547518644] // Set the bounding box coordinates
+        });
+        
+        geocoder.on('result', (event) => {
+          const searchResult = event.result.geometry;
+          const options = { units: 'miles' };
+            for (const station of stations.features) {
+            station.properties.distance = turf.distance(
+            searchResult,
+            stations.geometry,
+            options
+           );
+        }
+        
+        stations.features.sort((a, b) => {
+           if (a.properties.distance > b.properties.distance) {
+          return 1;
+          }
+          if (a.properties.distance < b.properties.distance) {
+           return -1;
+          }
+           return 0; // a must be equal to b
+        });
+
+        const activeListing = document.getElementById(
+         `listing-${stations.features[0].properties.id}`
+         );
+        activeListing.classList.add('active');
+
+
+        });
+
+     map.addControl(geocoder, 'top-right');
+
+        /**
+         * Add all the things to the page:
+         * - The location listings on the side of the page
+         * - The markers onto the map
+         */
+        buildLocationList(stations);
+        addMarkers();
+      });
+
+      /**
+       * Add a marker to the map for every station listing.
+       **/
+      function addMarkers() {
+        /* For each feature in the GeoJSON object above: */
+        for (const marker of stations.features) {
+          /* Create a div element for the marker. */
+          const el = document.createElement('div');
+          /* Assign a unique `id` to the marker. */
+          el.id = `marker-${marker.properties.id}`;
+          /* Assign the `marker` class to each marker for styling. */
+          el.className = 'marker';
+
+          /**
+           * Create a marker using the div element
+           * defined above and add it to the map.
+           **/
+          new mapboxgl.Marker(el, { offset: [0, -23] })
+            .setLngLat(marker.geometry.coordinates)
+            .addTo(map);
+
+          /**
+           * Listen to the element and when it is clicked, do three things:
+           * 1. Fly to the point
+           * 2. Close all other popups and display popup for clicked station
+           * 3. Highlight listing in sidebar (and remove highlight for all other listings)
+           **/
+          el.addEventListener('click', (e) => {
+            /* Fly to the point */
+            flytoStation(marker);
+            /* Close all other popups and display popup for clicked station */
+            createPopUp(marker);
+            /* Highlight listing in sidebar */
+            const activeItem = document.getElementsByClassName('active');
+            e.stopPropagation();
+            if (activeItem[0]) {
+              activeItem[0].classList.remove('active');
+            }
+            const listing = document.getElementById(
+              `listing-${marker.properties.id}`
+            );
+            listing.classList.add('active');
+          });
+        }
+      }
+
+      /**
+       * Add a listing for each station to the sidebar.
+       **/
+      function buildLocationList(stations) {
+        for (const station of stations.features) {
+          /* Add a new listing section to the sidebar. */
+          const listings = document.getElementById('listings');
+          const listing = listings.appendChild(document.createElement('div'));
+          /* Assign a unique `id` to the listing. */
+          listing.id = `listing-${station.properties.id}`;
+          /* Assign the `item` class to each listing for styling. */
+          listing.className = 'item';
+
+          /* Add the link to the individual listing created above. */
+          const link = listing.appendChild(document.createElement('a'));
+          link.href = '#';
+          link.className = 'title';
+          link.id = `link-${station.properties.id}`;
+          link.innerHTML = `Firestation ${station.properties.stationNum}`;
+
+          /* Add details to the individual listing. */
+          const details = listing.appendChild(document.createElement('div'));
+          details.innerHTML = `${station.properties.city}`;
+           if (station.properties.address) {
+            details.innerHTML += ` &middot; ${station.properties.address}`;
+
+
+          
+           if (station.properties.distance) {
+             const roundedDistance = Math.round(station.properties.distance * 100) / 100;
+             details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+           }
+      }
+
+          /**
+           * Listen to the element and when it is clicked, do four things:
+           * 1. Update the `currentFeature` to the station associated with the clicked link
+           * 2. Fly to the point
+           * 3. Close all other popups and display popup for clicked station
+           * 4. Highlight listing in sidebar (and remove highlight for all other listings)
+           **/
+          link.addEventListener('click', function () {
+            for (const feature of stations.features) {
+              if (this.id === `link-${feature.properties.id}`) {
+                flytoStation(feature);
+                createPopUp(feature);
+              }
+            }
+            const activeItem = document.getElementsByClassName('active');
+            if (activeItem[0]) {
+              activeItem[0].classList.remove('active');
+            }
+            this.parentNode.classList.add('active');
+          });
+        }
+      }
+
+      /**
+       * Use Mapbox GL JS's `flyTo` to move the camera smoothly
+       * a given center point.
+       **/
+      function flytoStation(currentFeature) {
+        map.flyTo({
+          center: currentFeature.geometry.coordinates,
+          zoom: 11
+        });
+      }
+
+      /**
+       * Create a Mapbox GL JS `Popup`.
+       **/
+      function createPopUp(currentFeature) {
+        const popUps = document.getElementsByClassName('mapboxgl-popup');
+        if (popUps[0]) popUps[0].remove();
+        const popup = new mapboxgl.Popup({ closeOnClick: false })
+          .setLngLat(currentFeature.geometry.coordinates)
+          .setHTML(
+            `<h3>Firestation ${currentFeature.properties.stationNum}</h3><h4>${currentFeature.properties.address}</h4>`
+          )
+          .addTo(map);
+      }
+    </script>
+  </body>
+</html>
