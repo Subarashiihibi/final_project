@@ -132,7 +132,7 @@
         cursor: pointer;
         height: 20px;
         width: 20px;
-        background-image: url('./img/fire-station.svg');
+        background-image: url('img/fire-station.svg');
       }
 
       /* Marker tweaks */
@@ -201,7 +201,7 @@
     </div>
     <div id="map" class="map"></div>
     <script>
-      mapboxgl.accessToken = 'pk.eyJ1Ijoic3RldmVuY2hlbjIwNzciLCJhIjoiY2t2Ym1oeDAyMGZmajJvcWlycnZrNnJsMCJ9.W-Uc6UehvPm0_Xw6lit0Pw';
+      mapboxgl.accessToken = 'pk.eyJ1Ijoic3RldmVuY2hlbjIwNzciLCJhIjoiY2t2YnY1a24zMGg0aTJ1cDFxc2trbDl3biJ9.vDsvw0Y_E3P_3yrqSZL4fg';
 
       /**
        * Add the map to the page
@@ -209,270 +209,81 @@
       const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/stevenchen2077/ckwvsco1k1eti15oevwf6qji4',
-        center: [-122.30984860942972, 47.65657449421067,],
-        zoom: 10,
+        center: [-122.30984860942972, 47.65657449421067],
+        zoom: 12,
         scrollZoom: true
       });
 
+      async function geojasonfetch(){
 
-      const stations = {
-        'type': 'FeatureCollection',
-        'features': [
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.31698234594238, 47.668479819509805]
-            },
-            'properties': {
-              'stationNum': '17',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '1050 NE 50th St',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98105',
-              'state': 'WA.'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [ -122.32492617993286, 47.68053941678664]
-            },
-            'properties': {
-              'stationNum': '16',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '6846 Oswego Pl NE',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98115',
-              'state': ', WA.'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.26989450575692, 47.67238320057348]
-            },
-            'properties': {
-              'stationNum': '38',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '4004 NE 55th Street',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98105',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.3223310774194, 47.65221614534447]
-            },
-            'properties': {
-              'stationNum': '22',
-              'phoneFormatted': '(202) 337-9338',
-              'phone': '2023379338',
-              'address': '901 E Roanoke St #3917',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98102',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.34890007814639, 47.65376162601811]
-            },
-            'properties': {
-              'stationNum': '9',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '3829 Linden Ave N',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98103',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.29154139310566, 47.63679313958275]
-            },
-            'properties': {
-              'stationNum': '34',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '633 32nd Ave E',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98112',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [ -122.34487456282154, 47.62527356624467]
-            },
-            'properties': {
-              'stationNum': '2',
-              'address': '2320 4th Ave',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98121',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [ -122.35722270516746, 47.639257497496]
-            },
-            'properties': {
-              'stationNum': '8',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '4831 Bethesda Ave',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98109',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [ -122.37069839270998, 47.65134968210105]
-            },
-            'properties': {
-              'stationNum': '20',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '2800 15th Ave W',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98119',
-              'state': 'Washington'
-            }
-          },
-          {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [-122.37970662307687, 47.6785641700079]
-            },
-            'properties': {
-              'stationNum': '18',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '1521 NW Market St #5212',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98107',
-              'state': 'Washington'
-              }
-            },
-            {
-            'type': 'Feature',
-            'geometry': {
-              'type': 'Point',
-              'coordinates': [ -122.35278815039494,47.69064128049579]
-            },
-            'properties': {
-              'stationNum': '21',
-              'phoneFormatted': '(206) 386-1400',
-              'phone': '2063861400',
-              'address': '7304 Greenwood Ave N',
-              'city': 'Seattle',
-              'country': 'United States',
-              'postalCode': '98103',
-              'state': 'Washington'
-            }
-          }
-        ]
-      };
-      /**
-       * Wait until the map loads to make changes to the map.
-       */
-        map.on('load', () => {
-        /**
+          let response = await fetch('assets/firestation_kc.geojson');
+          let stations = await response.json();
+
+         /**
+         * Wait until the map loads to make changes to the map.
+         */
+         map.on('load', () => {
+         /**
          * This is where your '.addLayer()' used to be, instead
          * add only the source without styling a layer
          */
-        map.addSource('places', {
-          'type': 'geojson',
-          'data': stations
-        });
+           map.addSource('places', {
+             'type': 'geojson',
+             'data': stations
+            });
 
-
-
-        const geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken, // Set the access token
-        mapboxgl: mapboxgl, // Set the mapbox-gl instance
-        marker: true, // Use the geocoder's default marker style
-        bbox: [-122.43389004908049, 47.61034743958178, , -122.23505950457803, 47.70327547518644] // Set the bounding box coordinates
-        });
+         const geocoder = new MapboxGeocoder({
+         accessToken: mapboxgl.accessToken, // Set the access token
+         mapboxgl: mapboxgl, // Set the mapbox-gl instance
+         marker: true, // Use the geocoder's default marker style
+         bbox: [-122.44, 47.5, , -122.24, 47.73],// Set the bounding box coordinates
+         flyTo: { 
+             zoom: 11, // If you want your result not to go further than a specific zoom
+         }
+         });
         
-        geocoder.on('result', (event) => {
+         map.addControl(geocoder, 'top-right');
+         buildLocationList(stations);
+         addMarkers();
+
+         geocoder.on('result', (event) => {
           const searchResult = event.result.geometry;
+          
+          // calculate distance
           const options = { units: 'miles' };
             for (const station of stations.features) {
             station.properties.distance = turf.distance(
             searchResult,
-            stations.geometry,
+            station.geometry,
             options
            );
-        }
+         }
         
-        stations.features.sort((a, b) => {
+           stations.features.sort((a, b) => {
            if (a.properties.distance > b.properties.distance) {
-          return 1;
-          }
-          if (a.properties.distance < b.properties.distance) {
-           return -1;
-          }
-           return 0; // a must be equal to b
+            return 1;
+           }
+           if (a.properties.distance < b.properties.distance) {
+            return -1;
+           }
+            return 0; // a must be equal to b
         });
 
-        const activeListing = document.getElementById(
+         const activeListing = document.getElementById(
          `listing-${stations.features[0].properties.id}`
          );
-        activeListing.classList.add('active');
-
-
+         activeListing.classList.add('active');
         });
 
-     map.addControl(geocoder, 'top-right');
 
-        /**
-         * Add all the things to the page:
-         * - The location listings on the side of the page
-         * - The markers onto the map
-         */
-        buildLocationList(stations);
-        addMarkers();
-      });
+       });
 
-      /**
+       buildLocationList(stations);
+
+       /**
        * Add a marker to the map for every station listing.
        **/
-      function addMarkers() {
+       function addMarkers() {
         /* For each feature in the GeoJSON object above: */
         for (const marker of stations.features) {
           /* Create a div element for the marker. */
@@ -515,10 +326,10 @@
         }
       }
 
-      /**
+       /**
        * Add a listing for each station to the sidebar.
        **/
-      function buildLocationList(stations) {
+       function buildLocationList(stations) {
         for (const station of stations.features) {
           /* Add a new listing section to the sidebar. */
           const listings = document.getElementById('listings');
@@ -533,21 +344,14 @@
           link.href = '#';
           link.className = 'title';
           link.id = `link-${station.properties.id}`;
-          link.innerHTML = `Firestation ${station.properties.stationNum}`;
+          link.innerHTML = `Fire ${station.properties.NAME}`;
 
           /* Add details to the individual listing. */
           const details = listing.appendChild(document.createElement('div'));
-          details.innerHTML = `${station.properties.city}`;
-           if (station.properties.address) {
-            details.innerHTML += ` &middot; ${station.properties.address}`;
+           if (station.properties.ADDRESS) {
+            details.innerHTML += `${station.properties.ADDRESS} , WA, US`;
 
-
-          
-           if (station.properties.distance) {
-             const roundedDistance = Math.round(station.properties.distance * 100) / 100;
-             details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
-           }
-      }
+       }
 
           /**
            * Listen to the element and when it is clicked, do four things:
@@ -576,26 +380,29 @@
        * Use Mapbox GL JS's `flyTo` to move the camera smoothly
        * a given center point.
        **/
-      function flytoStation(currentFeature) {
+       function flytoStation(currentFeature) {
         map.flyTo({
           center: currentFeature.geometry.coordinates,
-          zoom: 11
+          zoom: 13
         });
       }
 
       /**
        * Create a Mapbox GL JS `Popup`.
        **/
-      function createPopUp(currentFeature) {
+       function createPopUp(currentFeature) {
         const popUps = document.getElementsByClassName('mapboxgl-popup');
         if (popUps[0]) popUps[0].remove();
         const popup = new mapboxgl.Popup({ closeOnClick: false })
           .setLngLat(currentFeature.geometry.coordinates)
           .setHTML(
-            `<h3>Firestation ${currentFeature.properties.stationNum}</h3><h4>${currentFeature.properties.address}</h4>`
+            `<h3>Fire ${currentFeature.properties.NAME}</h3><h4>${currentFeature.properties.ADDRESS} , WA, US</h4>`
           )
           .addTo(map);
       }
+     }
+      geojasonfetch();
+
     </script>
   </body>
 </html>
